@@ -39,28 +39,37 @@ public class ExposeAnnotationExclusionStrategyTest {
 
     @Test
     public void testSkipNonAnnotatedFields() throws Exception {
-        assertFieldExclusion("hiddenField", true);
+        Field f = createFieldAttributes("hiddenField");
+        assertThat(excluder.excludeField(f, true)).isTrue();
+        assertThat(excluder.excludeField(f, false)).isTrue();
     }
 
     @Test
     public void testSkipExplicitlySkippedFields() throws Exception {
-        assertFieldExclusion("explicitlyHiddenField", true);
+        Field f = createFieldAttributes("explicitlyHiddenField");
+        assertThat(excluder.excludeField(f, true)).isTrue();
+        assertThat(excluder.excludeField(f, false)).isTrue();
     }
 
     @Test
     public void testNeverSkipExposedAnnotatedFields() throws Exception {
-        assertFieldExclusion("exposedField", false);
+        Field f = createFieldAttributes("exposedField");
+        assertThat(excluder.excludeField(f, true)).isFalse();
+        assertThat(excluder.excludeField(f, false)).isFalse();
     }
 
     @Test
     public void testNeverSkipExplicitlyExposedAnnotatedFields() throws Exception {
-        assertFieldExclusion("explicitlyExposedField", false);
+        Field f = createFieldAttributes("explicitlyExposedField");
+        assertThat(excluder.excludeField(f, true)).isFalse();
+        assertThat(excluder.excludeField(f, false)).isFalse();
     }
 
-    private void assertFieldExclusion(String fieldName, boolean expectedExclusion) throws Exception {
-        Field f = createFieldAttributes(fieldName);
-        assertThat(excluder.excludeField(f, true)).isEqualTo(expectedExclusion);
-        assertThat(excluder.excludeField(f, false)).isEqualTo(expectedExclusion);
+    @Test
+    public void testDifferentSerializeAndDeserializeField() throws Exception {
+        Field f = createFieldAttributes("explicitlyDifferentModeField");
+        assertThat(excluder.excludeField(f, true)).isFalse();
+        assertThat(excluder.excludeField(f, false)).isTrue();
     }
 
     private static Field createFieldAttributes(String fieldName) throws Exception {
