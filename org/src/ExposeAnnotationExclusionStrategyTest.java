@@ -40,40 +40,45 @@ public class ExposeAnnotationExclusionStrategyTest {
     @Test
     public void testSkipNonAnnotatedFields() throws Exception {
         Field f = createFieldAttributes("hiddenField");
-        assertThat(excluder.excludeField(f, true)).isTrue();
-        assertThat(excluder.excludeField(f, false)).isTrue();
+        assertFieldExclusion(f, true, true);
+        assertFieldExclusion(f, false, true);
     }
 
     @Test
     public void testSkipExplicitlySkippedFields() throws Exception {
         Field f = createFieldAttributes("explicitlyHiddenField");
-        assertThat(excluder.excludeField(f, true)).isTrue();
-        assertThat(excluder.excludeField(f, false)).isTrue();
+        assertFieldExclusion(f, true, true);
+        assertFieldExclusion(f, false, true);
     }
 
     @Test
     public void testNeverSkipExposedAnnotatedFields() throws Exception {
         Field f = createFieldAttributes("exposedField");
-        assertThat(excluder.excludeField(f, true)).isFalse();
-        assertThat(excluder.excludeField(f, false)).isFalse();
+        assertFieldExclusion(f, true, false);
+        assertFieldExclusion(f, false, false);
     }
 
     @Test
     public void testNeverSkipExplicitlyExposedAnnotatedFields() throws Exception {
         Field f = createFieldAttributes("explicitlyExposedField");
-        assertThat(excluder.excludeField(f, true)).isFalse();
-        assertThat(excluder.excludeField(f, false)).isFalse();
+        assertFieldExclusion(f, true, false);
+        assertFieldExclusion(f, false, false);
     }
 
     @Test
     public void testDifferentSerializeAndDeserializeField() throws Exception {
         Field f = createFieldAttributes("explicitlyDifferentModeField");
-        assertThat(excluder.excludeField(f, true)).isFalse();
-        assertThat(excluder.excludeField(f, false)).isTrue();
+        assertFieldExclusion(f, true, false);
+        assertFieldExclusion(f, false, true);
     }
 
     private static Field createFieldAttributes(String fieldName) throws Exception {
         return MockObject.class.getField(fieldName);
+    }
+
+    private void assertFieldExclusion(Field field, boolean serialize, boolean expected) throws Exception {
+        boolean actual = excluder.excludeField(field, serialize);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @SuppressWarnings("unused")
