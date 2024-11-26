@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2008 Google Inc.
  *
@@ -110,11 +109,7 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
     @Override
     public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
         Class<?> rawType = type.getRawType();
-        boolean excludeClass =
-                (version != Excluder.IGNORE_VERSIONS
-                        && !isValidVersion(rawType.getAnnotation(Since.class), rawType.getAnnotation(Until.class)))
-                        || (!serializeInnerClasses && isInnerClass(rawType))
-                        || isAnonymousOrNonStaticLocal(rawType);
+        boolean excludeClass = excludeClassChecks(rawType);
 
         final boolean skipSerialize = excludeClass || excludeClassInStrategy(rawType, true);
         final boolean skipDeserialize = excludeClass || excludeClassInStrategy(rawType, false);
@@ -194,8 +189,7 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
         return false;
     }
 
-    public boolean excludeClass(Class<?> clazz, boolean serialize) {
-        // Inlined logic from excludeClassChecks
+    private boolean excludeClassChecks(Class<?> clazz) {
         if (version != Excluder.IGNORE_VERSIONS
                 && !isValidVersion(clazz.getAnnotation(Since.class), clazz.getAnnotation(Until.class))) {
             return true;
@@ -205,7 +199,11 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
             return true;
         }
 
-        return isAnonymousOrNonStaticLocal(clazz) || excludeClassInStrategy(clazz, serialize);
+        return isAnonymousOrNonStaticLocal(clazz);
+    }
+
+    public boolean excludeClass(Class<?> clazz, boolean serialize) {
+        return excludeClassChecks(clazz) || excludeClassInStrategy(clazz, serialize);
     }
 
     private boolean excludeClassInStrategy(Class<?> clazz, boolean serialize) {
