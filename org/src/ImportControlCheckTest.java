@@ -468,11 +468,15 @@ public class ImportControlCheckTest extends AbstractModuleTestSupport {
             verifyWithInlineConfigParser(getPath("InputImportControlTestException.java"));
         });
 
-        assertThat(ex.getCause().getCause().getCause().getCause().getCause().getMessage())
+        assertThat(getOriginalExceptionMessage(ex))
                 .startsWith("unable to parse file:");
-        assertThat(ex.getCause().getCause().getCause().getCause().getCause().getMessage())
+        assertThat(getOriginalExceptionMessage(ex))
                 .endsWith("- Document root element \"import-control\", must match DOCTYPE"
                         + " root \"null\".");
+    }
+
+    private String getOriginalExceptionMessage(CheckstyleException exception) {
+        return exception.getCause().getCause().getCause().getCause().getCause().getMessage();
     }
 
     /**
