@@ -15,37 +15,49 @@ public class ElasticsearchDialectFactory {
             throw log.unsupportedElasticsearchVersion( version );
         }
         else if ( major == 5 ) {
-            if ( minor < 6 ) {
-                throw log.unsupportedElasticsearchVersion( version );
-            }
-            // Either the latest supported version, or a newer/unknown one
-            if ( minor != 6 ) {
-                log.unknownElasticsearchVersion( version );
-            }
-            return new Elasticsearch56ProtocolDialect();
+            return createProtocolDialectForVersion5(minor, version);
         }
         else if ( major == 6 ) {
-            if ( minor < 3 ) {
-                return new Elasticsearch60ProtocolDialect();
-            }
-            if ( minor < 4 ) {
-                return new Elasticsearch63ProtocolDialect();
-            }
-            if ( minor < 7 ) {
-                return new Elasticsearch64ProtocolDialect();
-            }
-            // Either the latest supported version, or a newer/unknown one
-            if ( minor > 8 ) {
-                log.unknownElasticsearchVersion( version );
-            }
-            return new Elasticsearch67ProtocolDialect();
+            return createProtocolDialectForVersion6(minor, version);
         }
         else {
-            // Either the latest supported version, or a newer/unknown one
-            if ( major != 7 ) {
-                log.unknownElasticsearchVersion( version );
-            }
-            return new Elasticsearch70ProtocolDialect();
+            return createProtocolDialectForVersion7(version);
         }
+    }
+
+    private ElasticsearchProtocolDialect createProtocolDialectForVersion5(int minor, ElasticsearchVersion version) {
+        if ( minor < 6 ) {
+            throw log.unsupportedElasticsearchVersion( version );
+        }
+        // Either the latest supported version, or a newer/unknown one
+        if ( minor != 6 ) {
+            log.unknownElasticsearchVersion( version );
+        }
+        return new Elasticsearch56ProtocolDialect();
+    }
+
+    private ElasticsearchProtocolDialect createProtocolDialectForVersion6(int minor, ElasticsearchVersion version) {
+        if ( minor < 3 ) {
+            return new Elasticsearch60ProtocolDialect();
+        }
+        if ( minor < 4 ) {
+            return new Elasticsearch63ProtocolDialect();
+        }
+        if ( minor < 7 ) {
+            return new Elasticsearch64ProtocolDialect();
+        }
+        // Either the latest supported version, or a newer/unknown one
+        if ( minor > 8 ) {
+            log.unknownElasticsearchVersion( version );
+        }
+        return new Elasticsearch67ProtocolDialect();
+    }
+
+    private ElasticsearchProtocolDialect createProtocolDialectForVersion7(ElasticsearchVersion version) {
+        // Either the latest supported version, or a newer/unknown one
+        if ( version.major() != 7 ) {
+            log.unknownElasticsearchVersion( version );
+        }
+        return new Elasticsearch70ProtocolDialect();
     }
 }
