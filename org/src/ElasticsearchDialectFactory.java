@@ -15,10 +15,30 @@ public class ElasticsearchDialectFactory {
             throw log.unsupportedElasticsearchVersion( version );
         }
         else if ( major == 5 ) {
-            return createProtocolDialectV5( version, minor );
+            if ( minor < 6 ) {
+                throw log.unsupportedElasticsearchVersion( version );
+            }
+            // Either the latest supported version, or a newer/unknown one
+            if ( minor != 6 ) {
+                log.unknownElasticsearchVersion( version );
+            }
+            return new Elasticsearch56ProtocolDialect();
         }
         else if ( major == 6 ) {
-            return createProtocolDialectV6( version, minor );
+            if ( minor < 3 ) {
+                return new Elasticsearch60ProtocolDialect();
+            }
+            if ( minor < 4 ) {
+                return new Elasticsearch63ProtocolDialect();
+            }
+            if ( minor < 7 ) {
+                return new Elasticsearch64ProtocolDialect();
+            }
+            // Either the latest supported version, or a newer/unknown one
+            if ( minor > 8 ) {
+                log.unknownElasticsearchVersion( version );
+            }
+            return new Elasticsearch67ProtocolDialect();
         }
         else {
             // Either the latest supported version, or a newer/unknown one
@@ -27,21 +47,5 @@ public class ElasticsearchDialectFactory {
             }
             return new Elasticsearch70ProtocolDialect();
         }
-    }
-    private ElasticsearchProtocolDialect createProtocolDialectV6(ElasticsearchVersion version, int minor) {
-        if ( minor < 3 ) {
-            return new Elasticsearch60ProtocolDialect();
-        }
-        if ( minor < 4 ) {
-            return new Elasticsearch63ProtocolDialect();
-        }
-        if ( minor < 7 ) {
-            return new Elasticsearch64ProtocolDialect();
-        }
-        // Either the latest supported version, or a newer/unknown one
-        if ( minor > 8 ) {
-            log.unknownElasticsearchVersion( version );
-        }
-        return new Elasticsearch67ProtocolDialect();
     }
 }
