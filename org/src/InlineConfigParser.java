@@ -1,22 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-// checkstyle: Checks Java source code for adherence to a set of rules.
-// Copyright (C) 2001-2021 the original author or authors.
-//
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-//
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-////////////////////////////////////////////////////////////////////////////////
-
 package com.puppycrawl.tools.checkstyle.bdd;
 
 import java.io.File;
@@ -38,8 +19,8 @@ import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 
 public final class InlineConfigParser {
 
-    /** A pattern matching the symbol: "\" or "/". */
-    private static final Pattern SLASH_PATTERN = Pattern.compile("[\\\\/]");
+    /** A pattern matching the symbol: "\\" or "/". */
+    private static final Pattern SLASH_PATTERN = Pattern.compile("[\\/]");
 
     /** A pattern to find the string: "// violation". */
     private static final Pattern VIOLATION_PATTERN = Pattern
@@ -80,13 +61,29 @@ public final class InlineConfigParser {
      */
     public static TestInputConfiguration parse(String inputFilePath) throws Exception {
         final Path filePath = Paths.get(inputFilePath);
-        final List<String> lines = readFile(filePath);
+        final List<String> lines = readLinesFromFile(filePath);
         final TestInputConfiguration.Builder inputConfigBuilder =
                 new TestInputConfiguration.Builder();
         setCheckName(inputConfigBuilder, inputFilePath, lines);
         setCheckProperties(inputConfigBuilder, inputFilePath, lines);
         setViolations(inputConfigBuilder, lines);
         return inputConfigBuilder.build();
+    }
+
+    /**
+     * Reads all lines from the specified file.
+     *
+     * @param filePath the path to the file to read.
+     * @return a list of lines from the file.
+     * @throws CheckstyleException if unable to read the file.
+     */
+    private static List<String> readLinesFromFile(Path filePath) throws CheckstyleException {
+        try {
+            return Files.readAllLines(filePath);
+        }
+        catch (IOException ex) {
+            throw new CheckstyleException("Failed to read lines from file: " + filePath, ex);
+        }
     }
 
     private static String getFullyQualifiedClassName(String filePath, String checkName) {
@@ -130,15 +127,6 @@ public final class InlineConfigParser {
             resolvedFilePath = getFilePath(fileValue, inputFilePath);
         }
         return resolvedFilePath;
-    }
-
-    private static List<String> readFile(Path filePath) throws CheckstyleException {
-        try {
-            return Files.readAllLines(filePath);
-        }
-        catch (IOException ex) {
-            throw new CheckstyleException("Failed to read " + filePath, ex);
-        }
     }
 
     private static void setCheckName(TestInputConfiguration.Builder inputConfigBuilder,
