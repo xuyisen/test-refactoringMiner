@@ -99,13 +99,17 @@ public class BackgroundInitializerTest extends AbstractLangTest {
             if (ex != null) {
                 throw ex;
             }
+            handleDelay();
+            return Integer.valueOf(++initializeCalls);
+        }
+
+        private void handleDelay() throws InterruptedException {
             if (shouldSleep) {
                 ThreadUtils.sleep(Duration.ofMinutes(1));
             }
             if (waitForLatch) {
                 latch.await();
             }
-            return Integer.valueOf(++initializeCalls);
         }
     }
 }
