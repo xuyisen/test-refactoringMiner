@@ -695,6 +695,17 @@ public final class JavaAstUtils {
     }
 
     /**
+     * Tests if the node is an {@link ASTInfixExpression} with one of the given operators.
+     */
+    public static boolean isInfixExprWithOperator(@Nullable JavaNode e, Set<BinaryOp> operators) {
+        if (e instanceof ASTInfixExpression) {
+            ASTInfixExpression infix = (ASTInfixExpression) e;
+            return operators.contains(infix.getOperator());
+        }
+        return false;
+    }
+
+    /**
      * Tests if the node is an {@link ASTInfixExpression} with the given operator.
      */
     public static boolean isInfixExprWithOperator(@Nullable JavaNode e, BinaryOp operator) {
