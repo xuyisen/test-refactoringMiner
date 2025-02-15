@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.io.file.PathFilter;
@@ -146,6 +147,23 @@ public abstract class AbstractFileFilter implements IOFileFilter, PathVisitor {
     @Override
     public FileVisitResult visitFileFailed(final Path file, final IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
+    }
+
+    /**
+     * Appends the string representation of the file filters to the provided StringBuilder.
+     *
+     * @param buffer the StringBuilder to append to
+     * @fileFilters fileFilters the list of file filters
+     */
+    protected void appendFileFilters(StringBuilder buffer, List<AbstractFileFilter> fileFilters) {
+        if (fileFilters != null) {
+            for (int i = 0; i < fileFilters.size(); i++) {
+                if (i > 0) {
+                    buffer.append(",");
+                }
+                buffer.append(fileFilters.get(i));
+            }
+        }
     }
 
 }
