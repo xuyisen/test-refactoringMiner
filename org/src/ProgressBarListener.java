@@ -38,6 +38,10 @@ public final class ProgressBarListener implements GlobalAnalysisListener {
         progressBar.setExtraMessage(extraMessage() + "\r");
     }
 
+    private void incrementProgress() {
+        progressBar.step();
+        refreshProgressBar();
+    }
 
     /**
      * Updates progress bar string and forces it to be output regardless of its update interval.
@@ -81,8 +85,7 @@ public final class ProgressBarListener implements GlobalAnalysisListener {
             @Override
             public void close() {
                 // Refresh progress bar on file analysis end (or file was in cache)
-                progressBar.step();
-                refreshProgressBar();
+                ProgressBarListener.this.incrementProgress();
             }
         };
     }
