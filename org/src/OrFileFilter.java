@@ -34,7 +34,7 @@ import java.util.Objects;
  * @since 1.0
  * @see FileFilterUtils#or(IOFileFilter...)
  */
-public class OrFileFilter extends org.apache.commons.io.filefilter.AbstractFileFilter implements ConditionalFileFilter, Serializable {
+public class OrFileFilter extends AbstractFileFilter implements ConditionalFileFilter, Serializable {
 
     private static final long serialVersionUID = 5767770777065432721L;
 
@@ -196,7 +196,14 @@ public class OrFileFilter extends org.apache.commons.io.filefilter.AbstractFileF
         final StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
         buffer.append("(");
-        append(fileFilters, buffer);
+        if (fileFilters != null) {
+            for (int i = 0; i < fileFilters.size(); i++) {
+                if (i > 0) {
+                    buffer.append(",");
+                }
+                buffer.append(fileFilters.get(i));
+            }
+        }
         buffer.append(")");
         return buffer.toString();
     }
