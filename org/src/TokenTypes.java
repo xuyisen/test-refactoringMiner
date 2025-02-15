@@ -5908,4 +5908,18 @@ public final class TokenTypes {
     /** Prevent instantiation. */
     private TokenTypes() {
     }
+
+    /**
+     * Checks if a token type is a literal true or false.
+     *
+     * @param tokenType the TokenType
+     * @return true if tokenType is LITERAL_TRUE or LITERAL_FALSE
+     */
+    public static boolean isBooleanLiteralType(final int tokenType) {
+        final boolean isTrue = tokenType == LITERAL_TRUE;
+        final boolean isFalse = tokenType == LITERAL_FALSE;
+        return isTrue || isFalse;
+    }
+
+
 }
