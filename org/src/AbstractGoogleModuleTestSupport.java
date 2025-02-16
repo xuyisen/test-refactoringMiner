@@ -114,16 +114,7 @@ public abstract class AbstractGoogleModuleTestSupport extends AbstractItModuleTe
             throw new IllegalStateException("multiple instances of the same Module are detected");
         }
         else {
-            result = configs.stream().filter(conf -> {
-                        try {
-                            return conf.getProperty("id").equals(moduleId);
-                        }
-                        catch (CheckstyleException ex) {
-                            throw new IllegalStateException("problem to get ID attribute from " + conf, ex);
-                        }
-                    })
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("problem with module config"));
+            result = getConfigurationById(configs, moduleId);
         }
 
         return result;

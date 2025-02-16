@@ -318,6 +318,19 @@ public abstract class AbstractItModuleTestSupport extends AbstractPathTestSuppor
         return checkMessage;
     }
 
+    protected static Configuration getConfigurationById(List<Configuration> configs, String moduleId) {
+        return configs.stream().filter(conf -> {
+                    try {
+                        return conf.getProperty("id").equals(moduleId);
+                    }
+                    catch (CheckstyleException ex) {
+                        throw new IllegalStateException("problem to get ID attribute from " + conf, ex);
+                    }
+                })
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("problem with module config"));
+    }
+
     /**
      * Remove device from path string for windows path.
      *
