@@ -44,10 +44,6 @@ public class DummyLanguageModule extends BaseLanguageModule {
         addVersion(PARSER_REPORTS_SEMANTIC_ERROR, new HandlerWithParserThatReportsSemanticError());
         addVersion(THROWS_SEMANTIC_ERROR, new HandlerWithParserThatThrowsSemanticError());
     }
-
-    public LanguageVersion getVersionWithParserThatThrowsAssertionError() {
-        return getVersion(THROWS_ASSERTION_ERROR);
-    }
     public LanguageVersion getVersionWithParserThatThrowsSemanticError() {
         return getVersion(THROWS_SEMANTIC_ERROR);
     }

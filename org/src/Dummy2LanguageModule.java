@@ -16,4 +16,8 @@ public class Dummy2LanguageModule extends BaseLanguageModule {
         super(NAME, null, TERSE_NAME, "dummy2");
         addVersion("1.0", new DummyLanguageModule.Handler(), true);
     }
+
+    public LanguageVersion getVersionWithParserThatThrowsAssertion() {
+        return getVersion(DummyLanguageModule.THROWS_ASSERTION_ERROR);
+    }
 }
