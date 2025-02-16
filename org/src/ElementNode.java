@@ -20,7 +20,6 @@
 package com.puppycrawl.tools.checkstyle.xpath;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.utils.TokenUtil;
@@ -46,9 +45,6 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     /** Constant for optimization. */
     private static final com.puppycrawl.tools.checkstyle.xpath.AbstractNode[] EMPTY_ABSTRACT_NODE_ARRAY = new com.puppycrawl.tools.checkstyle.xpath.AbstractNode[0];
 
-    /** Holder value for lazy creation of attribute node. */
-    private static final AttributeNode ATTRIBUTE_NODE_UNINITIALIZED = new AttributeNode(null, null);
-
     /** The root node. */
     private final com.puppycrawl.tools.checkstyle.xpath.AbstractNode root;
 
@@ -58,14 +54,14 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     /** The ast node. */
     private final DetailAST detailAst;
 
-    /** Depth of the node. */
-    private final int depth;
+    /** Represents text of the DetailAST. */
+    private final String text;
 
     /** Represents index among siblings. */
     private final int indexAmongSiblings;
 
     /** The text attribute node. */
-    private AttributeNode attributeNode = ATTRIBUTE_NODE_UNINITIALIZED;
+    private AttributeNode attributeNode;
 
     /**
      * Creates a new {@code ElementNode} instance.
@@ -73,17 +69,17 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
      * @param root {@code Node} root of the tree
      * @param parent {@code Node} parent of the current node
      * @param detailAst reference to {@code DetailAST}
-     * @param depth the current node depth in the hierarchy
-     * @param indexAmongSiblings the current node index among the parent children nodes
      */
-    public ElementNode(com.puppycrawl.tools.checkstyle.xpath.AbstractNode root, com.puppycrawl.tools.checkstyle.xpath.AbstractNode parent, DetailAST detailAst,
-                       int depth, int indexAmongSiblings) {
+    public ElementNode(com.puppycrawl.tools.checkstyle.xpath.AbstractNode root, com.puppycrawl.tools.checkstyle.xpath.AbstractNode parent, DetailAST detailAst) {
         super(root.getTreeInfo());
         this.parent = parent;
         this.root = root;
         this.detailAst = detailAst;
-        this.depth = depth;
-        this.indexAmongSiblings = indexAmongSiblings;
+        text = TokenUtil.getTokenName(detailAst.getType());
+        indexAmongSiblings = parent.getChildren().size();
+        setDepth(parent.getDepth() + 1);
+        createTextAttribute();
+        createChildren();
     }
 
     /**
@@ -96,7 +92,7 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     public int compareOrder(NodeInfo other) {
         int result = 0;
         if (other instanceof com.puppycrawl.tools.checkstyle.xpath.AbstractNode) {
-            result = depth - ((com.puppycrawl.tools.checkstyle.xpath.AbstractNode) other).getDepth();
+            result = getDepth() - ((com.puppycrawl.tools.checkstyle.xpath.AbstractNode) other).getDepth();
             if (result == 0) {
                 final ElementNode[] children = getCommonAncestorChildren(other);
                 result = children[0].indexAmongSiblings - children[1].indexAmongSiblings;
@@ -123,34 +119,16 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     }
 
     /**
-     * Getter method for node depth.
-     *
-     * @return depth
-     */
-    @Override
-    public int getDepth() {
-        return depth;
-    }
-
-    /**
      * Iterates children of the current node and
      * recursively creates new Xpath-nodes.
-     *
-     * @return children list
      */
-    @Override
-    protected List<com.puppycrawl.tools.checkstyle.xpath.AbstractNode> createChildren() {
-        return XpathUtil.createChildren(root, this, detailAst.getFirstChild());
-    }
-
-    /**
-     * Determine whether the node has any children.
-     *
-     * @return {@code true} is the node has any children.
-     */
-    @Override
-    public boolean hasChildNodes() {
-        return detailAst.hasChildren();
+    private void createChildren() {
+        DetailAST currentChild = detailAst.getFirstChild();
+        while (currentChild != null) {
+            final com.puppycrawl.tools.checkstyle.xpath.AbstractNode child = new ElementNode(root, this, currentChild);
+            addChild(child);
+            currentChild = currentChild.getNextSibling();
+        }
     }
 
     /**
@@ -165,9 +143,12 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     public String getAttributeValue(String namespace, String localPart) {
         final String result;
         if (TEXT_ATTRIBUTE_NAME.equals(localPart)) {
-            result = Optional.ofNullable(getAttributeNode())
-                    .map(AttributeNode::getStringValue)
-                    .orElse(null);
+            if (attributeNode == null) {
+                result = null;
+            }
+            else {
+                result = attributeNode.getStringValue();
+            }
         }
         else {
             result = null;
@@ -182,7 +163,7 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
      */
     @Override
     public String getLocalPart() {
-        return TokenUtil.getTokenName(detailAst.getType());
+        return text;
     }
 
     /**
@@ -239,7 +220,7 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
                 result = new Navigator.AncestorEnumeration(this, true);
                 break;
             case AxisInfo.ATTRIBUTE:
-                result = SingleNodeIterator.makeIterator(getAttributeNode());
+                result = SingleNodeIterator.makeIterator(attributeNode);
                 break;
             case AxisInfo.CHILD:
                 if (hasChildNodes()) {
@@ -396,20 +377,14 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
      * Checks if token type supports {@code @text} attribute,
      * extracts its value, creates {@code AttributeNode} object and returns it.
      * Value can be accessed using {@code @text} attribute.
-     *
-     * @return attribute node if possible, otherwise the {@code null} value
      */
-    private AttributeNode getAttributeNode() {
-        if (attributeNode == ATTRIBUTE_NODE_UNINITIALIZED) {
-            if (XpathUtil.supportsTextAttribute(detailAst)) {
-                attributeNode = new AttributeNode(TEXT_ATTRIBUTE_NAME,
-                        XpathUtil.getTextAttributeValue(detailAst));
-            }
-            else {
-                attributeNode = null;
-            }
+    private void createTextAttribute() {
+        AttributeNode attribute = null;
+        if (XpathUtil.supportsTextAttribute(detailAst)) {
+            attribute = new AttributeNode(TEXT_ATTRIBUTE_NAME,
+                    XpathUtil.getTextAttributeValue(detailAst));
         }
-        return attributeNode;
+        attributeNode = attribute;
     }
 
     /**

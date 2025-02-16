@@ -19,6 +19,7 @@
 
 package com.puppycrawl.tools.checkstyle.xpath;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -43,11 +44,14 @@ import net.sf.saxon.type.SchemaType;
  */
 public abstract class AbstractNode implements NodeInfo {
 
+    /** The children. */
+    private final List<AbstractNode> children = new ArrayList<>();
+
     /** The {@code TreeInfo} object. */
     private final TreeInfo treeInfo;
 
-    /** The children. */
-    private List<AbstractNode> children;
+    /** Depth of the node. */
+    private int depth;
 
     /**
      * Constructor of the abstract class {@code AbstractNode}.
@@ -77,14 +81,18 @@ public abstract class AbstractNode implements NodeInfo {
      *
      * @return depth
      */
-    public abstract int getDepth();
+    public int getDepth() {
+        return depth;
+    }
 
     /**
-     * Creates nodes for children.
+     * Setter method for node depth.
      *
-     * @return children list
+     * @param depth depth of node
      */
-    protected abstract List<AbstractNode> createChildren();
+    public final void setDepth(int depth) {
+        this.depth = depth;
+    }
 
     /**
      * Getter method for children.
@@ -92,10 +100,16 @@ public abstract class AbstractNode implements NodeInfo {
      * @return children list
      */
     protected List<AbstractNode> getChildren() {
-        if (children == null) {
-            children = createChildren();
-        }
         return Collections.unmodifiableList(children);
+    }
+
+    /**
+     * Add new child node to children list.
+     *
+     * @param node child node
+     */
+    protected void addChild(AbstractNode node) {
+        children.add(node);
     }
 
     /**
@@ -127,6 +141,16 @@ public abstract class AbstractNode implements NodeInfo {
     @Override
     public String getURI() {
         return "";
+    }
+
+    /**
+     * Returns if current node has children.
+     *
+     * @return if current node has children
+     */
+    @Override
+    public boolean hasChildNodes() {
+        return !children.isEmpty();
     }
 
     /**
