@@ -63,6 +63,9 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
     /** The text attribute node. */
     private AttributeNode attributeNode;
 
+    /** The depth of Node. */
+    private int depth;
+
     /**
      * Creates a new {@code ElementNode} instance.
      *
@@ -70,14 +73,14 @@ public class ElementNode extends com.puppycrawl.tools.checkstyle.xpath.AbstractN
      * @param parent {@code Node} parent of the current node
      * @param detailAst reference to {@code DetailAST}
      */
-    public ElementNode(com.puppycrawl.tools.checkstyle.xpath.AbstractNode root, com.puppycrawl.tools.checkstyle.xpath.AbstractNode parent, DetailAST detailAst) {
+    public ElementNode(AbstractNode root, AbstractNode parent, DetailAST detailAst) {
         super(root.getTreeInfo());
         this.parent = parent;
         this.root = root;
         this.detailAst = detailAst;
         text = TokenUtil.getTokenName(detailAst.getType());
         indexAmongSiblings = parent.getChildren().size();
-        setDepth(parent.getDepth() + 1);
+        this.depth = parent.getDepth() + 1;
         createTextAttribute();
         createChildren();
     }
