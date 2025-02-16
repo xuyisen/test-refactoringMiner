@@ -64,16 +64,16 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * To configure the check:
  * </p>
  * <pre>
- * <module name="NoWhitespaceBefore"/>
+ * &lt;module name=&quot;NoWhitespaceBefore&quot;/&gt;
  * </pre>
  * <p>Example:</p>
  * <pre>
  * int foo;
  * foo ++; // violation, whitespace before '++' is not allowed
  * foo++; // OK
- * for (int i = 0 ; i < 5; i++) {}  // violation
+ * for (int i = 0 ; i &lt; 5; i++) {}  // violation
  *            // ^ whitespace before ';' is not allowed
- * for (int i = 0; i < 5; i++) {} // OK
+ * for (int i = 0; i &lt; 5; i++) {} // OK
  * int[][] array = { { 1, 2 }
  *                 , { 3, 4 } }; // violation, whitespace before ',' is not allowed
  * int[][] array2 = { { 1, 2 },
@@ -83,7 +83,7 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *        ; // violation, whitespace before ';' is not allowed
  *   {
  *     label1 : // violation, whitespace before ':' is not allowed
- *     for (int i = 0; i < 10; i++) {}
+ *     for (int i = 0; i &lt; 10; i++) {}
  *   }
  *
  *   {
@@ -93,9 +93,9 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  * </pre>
  * <p>To configure the check to allow linebreaks before default tokens:</p>
  * <pre>
- * <module name="NoWhitespaceBefore">
- *   <property name="allowLineBreaks" value="true"/>
- * </module>
+ * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
+ *   &lt;property name=&quot;allowLineBreaks&quot; value=&quot;true&quot;/&gt;
+ * &lt;/module&gt;
  * </pre>
  * <p>Example:</p>
  * <pre>
@@ -114,10 +114,10 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *     To Configure the check to restrict the use of whitespace before METHOD_REF and DOT tokens:
  * </p>
  * <pre>
- * <module name="NoWhitespaceBefore">
- *   <property name="tokens" value="METHOD_REF"/>
- *   <property name="tokens" value="DOT"/>
- * </module>
+ * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
+ *   &lt;property name=&quot;tokens&quot; value=&quot;METHOD_REF&quot;/&gt;
+ *   &lt;property name=&quot;tokens&quot; value=&quot;DOT&quot;/&gt;
+ * &lt;/module&gt;
  * </pre>
  * <p>Example:</p>
  * <pre>
@@ -131,11 +131,11 @@ import com.puppycrawl.tools.checkstyle.utils.CommonUtil;
  *     To configure the check to allow linebreak before METHOD_REF and DOT tokens:
  * </p>
  * <pre>
- * <module name="NoWhitespaceBefore">
- *   <property name="tokens" value="METHOD_REF"/>
- *   <property name="tokens" value="DOT"/>
- *   <property name="allowLineBreaks" value="true"/>
- * </module>
+ * &lt;module name=&quot;NoWhitespaceBefore&quot;&gt;
+ *   &lt;property name=&quot;tokens&quot; value=&quot;METHOD_REF&quot;/&gt;
+ *   &lt;property name=&quot;tokens&quot; value=&quot;DOT&quot;/&gt;
+ *   &lt;property name=&quot;allowLineBreaks&quot; value=&quot;true&quot;/&gt;
+ * &lt;/module&gt;
  * </pre>
  * <p>Example:</p>
  * <pre>
@@ -213,12 +213,12 @@ public class NoWhitespaceBeforeCheck
         final int before = ast.getColumnNo() - 1;
         final int[] codePoints = line.codePoints().toArray();
 
-        if ((before == -1 || isWhitespace(codePoints, before))
+        if ((before == -1 || CommonUtil.isCodePointWhitespace(codePoints, before))
                 && !isInEmptyForInitializerOrCondition(ast)) {
             boolean flag = !allowLineBreaks;
             // verify all characters before '.' are whitespace
             for (int i = 0; i <= before - 1; i++) {
-                if (!isWhitespace(codePoints, i)) {
+                if (!CommonUtil.isCodePointWhitespace(codePoints, i)) {
                     flag = true;
                     break;
                 }
@@ -227,23 +227,6 @@ public class NoWhitespaceBeforeCheck
                 log(ast, MSG_KEY, ast.getText());
             }
         }
-    }
-
-    /**
-     * Converts the Unicode code point at index {@code index} to it's UTF-16
-     * representation, then checks if the character is whitespace. Note that the given
-     * index {@code index} should correspond to the location of the character
-     * to check in the string, not in code points.
-     *
-     * @param codePoints the array of Unicode code points
-     * @param index the index of the character to check
-     * @return true if character at {@code index} is whitespace
-     */
-    private static boolean isWhitespace(int[] codePoints, int index) {
-        //  We only need to check the first member of a surrogate pair to verify that
-        //  it is not whitespace.
-        final char character = Character.toChars(codePoints[index])[0];
-        return Character.isWhitespace(character);
     }
 
     /**
